@@ -1,13 +1,90 @@
 import random
 import gradio as gr
 
+CPU_arr = [
+    "Intel Core i9-13900K",
+    "Intel Core i7-13700K",
+    "Intel Core i5-13600K",
+    "AMD Ryzen 9 7950X",
+    "AMD Ryzen 7 7800X3D",
+    "AMD Ryzen 5 7600X",
+    "Apple M2 Pro",
+    "Apple M2 Max",
+    "Intel Xeon W-2400",
+    "AMD EPYC 9654"
+]
+
+GPU_arr = [
+    "NVIDIA GeForce RTX 2080 Ti",
+    "NVIDIA GeForce RTX 2070 Super",
+    "NVIDIA GeForce RTX 3060",
+    "NVIDIA GeForce RTX 3060 Ti",
+    "NVIDIA GeForce RTX 3070",
+    "NVIDIA GeForce RTX 3080",
+    "NVIDIA GeForce RTX 3090",
+    "NVIDIA GeForce RTX 4070",
+    "NVIDIA Tesla T100",
+    "NVIDIA Tesla A100"
+]
+
+CPU_dict = {
+    "Intel Core i9-13900K": "24核心32线程，主频3.0GHz，睿频5.8GHz，125W TDP",
+    "Intel Core i7-13700K": "16核心24线程，主频3.4GHz，睿频5.4GHz，125W TDP",
+    "Intel Core i5-13600K": "14核心20线程，主频3.5GHz，睿频5.1GHz，125W TDP",
+    "AMD Ryzen 9 7950X": "16核心32线程，主频4.5GHz，睿频5.7GHz，170W TDP",
+    "AMD Ryzen 7 7800X3D": "8核心16线程，主频4.2GHz，睿频5.0GHz，120W TDP",
+    "AMD Ryzen 5 7600X": "6核心12线程，主频4.7GHz，睿频5.3GHz，105W TDP",
+    "Apple M2 Pro": "10核心，主频高达3.5GHz，集成GPU 16核",
+    "Apple M2 Max": "12核心，主频高达3.7GHz，集成GPU 38核",
+    "Intel Xeon W-2400": "24核心48线程，主频3.1GHz，睿频4.8GHz，225W TDP",
+    "AMD EPYC 9654": "96核心192线程，主频2.4GHz，睿频3.7GHz，360W TDP"
+}
+
+GPU_dict = {
+    "NVIDIA GeForce RTX 2080 Ti": "4352 CUDA核心，11GB GDDR6显存，显存带宽616GB/s，核心频率1350MHz（加速频率1635MHz）",
+    "NVIDIA GeForce RTX 2070 Super": "2560 CUDA核心，8GB GDDR6显存，显存带宽448GB/s，核心频率1605MHz（加速频率1770MHz）",
+    "NVIDIA GeForce RTX 3060": "3584 CUDA核心，12GB GDDR6显存，显存带宽360GB/s，核心频率1320MHz（加速频率1777MHz）",
+    "NVIDIA GeForce RTX 3060 Ti": "4864 CUDA核心，8GB GDDR6显存，显存带宽448GB/s，核心频率1410MHz（加速频率1665MHz）",
+    "NVIDIA GeForce RTX 3080": "8704 CUDA核心，10GB GDDR6X显存，显存带宽760GB/s，核心频率1440MHz（加速频率1710MHz）",
+    "NVIDIA GeForce RTX 3090": "10496 CUDA核心，24GB GDDR6X显存，显存带宽936GB/s，核心频率1395MHz（加速频率1695MHz）",
+    "NVIDIA GeForce RTX 4080": "9728 CUDA核心，16GB GDDR6X显存，显存带宽716.8GB/s，核心频率2205MHz（加速频率2505MHz）",
+    "NVIDIA GeForce RTX 4090": "16384 CUDA核心，24GB GDDR6X显存，显存带宽1008GB/s，核心频率2235MHz（加速频率2520MHz）",
+    "NVIDIA Tesla T100": "2560 CUDA核心，16GB GDDR6显存，显存带宽448GB/s，核心频率1410MHz（加速频率1590MHz）",
+    "NVIDIA Tesla A100": "6912 CUDA核心，40GB HBM2显存，显存带宽1555GB/s，核心频率1410MHz（加速频率1530MHz）"
+}
+
+
+def update_dropdowns(table_column_1, table_column_2):
+    if table_column_1 == "CPU":
+        options = CPU_arr
+    elif table_column_1 == "GPU":
+        options = GPU_arr
+    else:
+        options = []
+    table_column_2 = gr.Dropdown.update(choices=options)
+    return table_column_2
+
+
+def gpt_outputs(dtype, device):
+    if dtype == "CPU":
+        outputs = CPU_dict[device]
+    elif dtype == "GPU":
+        outputs = GPU_dict[device]
+    else:
+        outputs = []
+    return outputs
+
+
 def latency_predict(file):
     if file is None:
-        return "Please provide a file!", None
-    with open(file.name, "rb") as f:
-        latency = "111"
-        topology_image_path = "./1.jpg"
+        return "Please upload a file!", None
+    if file.name.split('.')[-1] != "py":
+        return "Please upload a model file!", None
+    latency = random.uniform(0, 1)
+    # latency = ZYX's Model(file.name)
+    topology_image_path = "./model_onnx.png"
     return latency, topology_image_path
+
 
 def select_right_model(files, limit):
     if files is None:
@@ -22,11 +99,14 @@ def select_right_model(files, limit):
             meet_ret += f"the latency of {files[i].name.split('/')[-1]} is {a[i]}\n"
     return meet_ret, unmeet_ret
 
+
 def clear_fields():
     return None, None, None
 
+
 def clear_fields2():
     return None, 0, None, None
+
 
 if __name__ == '__main__':
     with gr.Blocks() as iface:
@@ -39,10 +119,20 @@ if __name__ == '__main__':
                     </div>
                     """
                 )
-                gr.Markdown("Please upload a file to predict its latency")
 
                 with gr.Row(elem_id="centered-row"):
                     with gr.Column():
+                        with gr.Row():
+                            Type_Dropdown = gr.Dropdown(["CPU", "GPU"], label="Choose your device model", value="CPU")
+                            Device_Dropdown = gr.Dropdown(CPU_arr, label="Choose your device")
+                            Device_button = gr.Button("Submit", elem_id="device-button")
+                            Type_Dropdown.change(update_dropdowns, inputs=[Type_Dropdown, Device_Dropdown],
+                                                 outputs=[Device_Dropdown])
+                        with gr.Row():
+                            with gr.Column(scale=1, min_width=50):
+                                ai_avatar = gr.Image(value="GPT-copy.svg", interactive=False, elem_id="avatar",show_label=False)
+                            with gr.Column(scale=10):
+                                GPT_outputs = gr.Text(show_label=False)
                         file_input = gr.File(label="Upload File")
                         latency_output = gr.Text(label="Latency")
                         with gr.Row():
@@ -62,7 +152,7 @@ if __name__ == '__main__':
                 with gr.Row(elem_id="centered-row"):
                     with gr.Column():
                         files_input = gr.File(label="Select Files", file_count="multiple")
-                        latency_limit = gr.Slider(minimum=0.0, maximum=10.0, step=0.01, label="Latency Limit (ms)")
+                        latency_limit = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="Latency Limit (ms)")
                         with gr.Row():
                             cancel_button2 = gr.Button("Cancel")
                             submit_button2 = gr.Button("Submit")
@@ -71,6 +161,11 @@ if __name__ == '__main__':
                         unmeet_files_output = gr.Text(label="Unmeet Files and Latency")
 
         # Button functionality
+        Device_button.click(
+            gpt_outputs,
+            inputs=[Type_Dropdown, Device_Dropdown],
+            outputs=GPT_outputs
+        )
         submit_button.click(
             latency_predict,
             inputs=file_input,
@@ -93,38 +188,23 @@ if __name__ == '__main__':
         # Custom CSS to set high-contrast based on system theme
         iface.css = """
             /* Light mode: darken content background for contrast */
-            @media (prefers-color-scheme: light) {
-                .gr-blocks, .gr-tab, .gr-row, .gr-column, .gr-markdown, .gr-button, .gr-slider, .gr-text, .gr-file, .gr-image {
-                    background-color: #000 !important;
-                    color: #fff !important;
-                    border: 1px solid #fff !important;
-                }
-                .gr-button {
-                    background-color: #222 !important;
-                    color: #fff !important;
-                    border-color: #fff !important;
-                }
-                .gr-slider input[type="range"] {
-                    background-color: #444 !important;
-                }
+             #device-button {
+                padding: 4px 8px;
+                font-size: 12px;
+                min-width: 60px;
             }
-
-            /* Dark mode: lighten content background for contrast */
-            @media (prefers-color-scheme: dark) {
-                .gr-blocks, .gr-tab, .gr-row, .gr-column, .gr-markdown, .gr-button, .gr-slider, .gr-text, .gr-file, .gr-image {
-                    background-color: #fff !important;
-                    color: #000 !important;
-                    border: 1px solid #000 !important;
-                }
-                .gr-button {
-                    background-color: #ddd !important;
-                    color: #000 !important;
-                    border-color: #000 !important;
-                }
-                .gr-slider input[type="range"] {
-                    background-color: #bbb !important;
-                }
+            
+            /* 设置头像的样式 */
+            #avatar {
+                border-radius: 50%;  /* 圆形头像 */
+                width: 40px;         /* 调整头像大小 */
+                height: 40px;
+                object-fit: cover;   /* 保持图像比例 */
+                top: 50%;
+                margin-top: -20px;
+                left: 50%;
+                margin-left: -20px;
             }
-        """
+                    """
 
     iface.launch()
