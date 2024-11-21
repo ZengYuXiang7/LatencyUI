@@ -128,7 +128,7 @@ if __name__ == '__main__':
                             Device_button = gr.Button("Submit", elem_id="device-button")
                         with gr.Row():
                             with gr.Column(scale=1, min_width=50):
-                                ai_avatar = gr.Image(value="GPT-copy.svg", interactive=False, elem_id="avatar",show_label=False)
+                                ai_avatar = gr.Image(value="GPT.png", interactive=False, elem_id="avatar",show_label=False)
                             with gr.Column(scale=10):
                                 GPT_outputs = gr.Text(show_label=False)
                         file_input = gr.File(label="Upload File",elem_id="file-input")
@@ -154,7 +154,7 @@ if __name__ == '__main__':
                             Device_button2 = gr.Button("Submit", elem_id="device-button")
                         with gr.Row():
                             with gr.Column(scale=1, min_width=50):
-                                ai_avatar2 = gr.Image(value="GPT-copy.svg", interactive=False, elem_id="avatar",show_label=False)
+                                ai_avatar2 = gr.Image(value="GPT.png", interactive=False, elem_id="avatar",show_label=False)
                             with gr.Column(scale=10):
                                 GPT_outputs2 = gr.Text(show_label=False)
                         files_input = gr.File(label="Select Files", file_count="multiple", elem_id="file-input")
