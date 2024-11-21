@@ -82,7 +82,7 @@ def latency_predict(file):
         return "Please upload a model file!", None
     latency = random.uniform(0, 1)
     # latency = ZYX's Model(file.name)
-    topology_image_path = "./gcn_onnx.png"
+    topology_image_path = "./model_onnx.png"
     return latency, topology_image_path
 
 
