@@ -19,10 +19,10 @@ GPU_arr = [
     "NVIDIA GeForce RTX 2070 Super",
     "NVIDIA GeForce RTX 3060",
     "NVIDIA GeForce RTX 3060 Ti",
-    "NVIDIA GeForce RTX 3070",
     "NVIDIA GeForce RTX 3080",
     "NVIDIA GeForce RTX 3090",
-    "NVIDIA GeForce RTX 4070",
+    "NVIDIA GeForce RTX 4080",
+    "NVIDIA GeForce RTX 4090",
     "NVIDIA Tesla T100",
     "NVIDIA Tesla A100"
 ]
@@ -82,7 +82,7 @@ def latency_predict(file):
         return "Please upload a model file!", None
     latency = random.uniform(0, 1)
     # latency = ZYX's Model(file.name)
-    topology_image_path = "./model_onnx.png"
+    topology_image_path = "./gcn_onnx.png"
     return latency, topology_image_path
 
 
@@ -126,19 +126,17 @@ if __name__ == '__main__':
                             Type_Dropdown = gr.Dropdown(["CPU", "GPU"], label="Choose your device model", value="CPU")
                             Device_Dropdown = gr.Dropdown(CPU_arr, label="Choose your device")
                             Device_button = gr.Button("Submit", elem_id="device-button")
-                            Type_Dropdown.change(update_dropdowns, inputs=[Type_Dropdown, Device_Dropdown],
-                                                 outputs=[Device_Dropdown])
                         with gr.Row():
                             with gr.Column(scale=1, min_width=50):
                                 ai_avatar = gr.Image(value="GPT-copy.svg", interactive=False, elem_id="avatar",show_label=False)
                             with gr.Column(scale=10):
                                 GPT_outputs = gr.Text(show_label=False)
-                        file_input = gr.File(label="Upload File")
+                        file_input = gr.File(label="Upload File",elem_id="file-input")
                         latency_output = gr.Text(label="Latency")
                         with gr.Row():
                             cancel_button = gr.Button("Cancel")
                             submit_button = gr.Button("Submit")
-                    topology_image = gr.Image(label="Model Topology")
+                    topology_image = gr.Image(label="Model Topology",elem_id="image-output")
 
             with gr.Tab("Select Right Model"):
                 gr.Markdown(
@@ -148,17 +146,25 @@ if __name__ == '__main__':
                     </div>
                     """
                 )
-                gr.Markdown("Please upload some files and set a latency limit.")
                 with gr.Row(elem_id="centered-row"):
                     with gr.Column():
-                        files_input = gr.File(label="Select Files", file_count="multiple")
+                        with gr.Row():
+                            Type_Dropdown2 = gr.Dropdown(["CPU", "GPU"], label="Choose your device model", value="CPU")
+                            Device_Dropdown2 = gr.Dropdown(CPU_arr, label="Choose your device")
+                            Device_button2 = gr.Button("Submit", elem_id="device-button")
+                        with gr.Row():
+                            with gr.Column(scale=1, min_width=50):
+                                ai_avatar2 = gr.Image(value="GPT-copy.svg", interactive=False, elem_id="avatar",show_label=False)
+                            with gr.Column(scale=10):
+                                GPT_outputs2 = gr.Text(show_label=False)
+                        files_input = gr.File(label="Select Files", file_count="multiple", elem_id="file-input")
                         latency_limit = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="Latency Limit (ms)")
                         with gr.Row():
                             cancel_button2 = gr.Button("Cancel")
                             submit_button2 = gr.Button("Submit")
-                    with gr.Column():
-                        meet_files_output = gr.Text(label="Meet Files and Latency")
-                        unmeet_files_output = gr.Text(label="Unmeet Files and Latency")
+                    with gr.Column(elem_id="second-output"):
+                        meet_files_output = gr.Text(label="Meet Files and Latency", elem_id="meet")
+                        unmeet_files_output = gr.Text(label="Unmeet Files and Latency", elem_id="unmeet")
 
         # Button functionality
         Device_button.click(
@@ -175,6 +181,11 @@ if __name__ == '__main__':
             clear_fields,
             outputs=[file_input, latency_output, topology_image]
         )
+        Device_button2.click(
+            gpt_outputs,
+            inputs=[Type_Dropdown2, Device_Dropdown2],
+            outputs=GPT_outputs2
+        )
         submit_button2.click(
             select_right_model,
             inputs=[files_input, latency_limit],
@@ -185,6 +196,16 @@ if __name__ == '__main__':
             outputs=[files_input, latency_limit, meet_files_output, unmeet_files_output]
         )
 
+        Type_Dropdown.change(
+            update_dropdowns,
+            inputs=[Type_Dropdown, Device_Dropdown],
+            outputs=[Device_Dropdown]
+        )
+        Type_Dropdown2.change(
+            update_dropdowns,
+            inputs=[Type_Dropdown2, Device_Dropdown2],
+            outputs=[Device_Dropdown2]
+        )
         # Custom CSS to set high-contrast based on system theme
         iface.css = """
             /* Light mode: darken content background for contrast */
@@ -193,7 +214,16 @@ if __name__ == '__main__':
                 font-size: 12px;
                 min-width: 60px;
             }
-            
+            #file-input {
+                height: 240px;
+            }
+            #image-output {
+                max-width: 450px;
+                max-height: 600px;
+            }
+            #second-output {
+                max-width: 450px;
+            }
             /* 设置头像的样式 */
             #avatar {
                 border-radius: 50%;  /* 圆形头像 */
