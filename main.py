@@ -1,6 +1,8 @@
 import random
 import gradio as gr
 
+from onnx_fig import generate_the_fig
+
 CPU_arr = [
     "Intel Core i9-13900K",
     "Intel Core i7-13700K",
@@ -80,10 +82,12 @@ def latency_predict(file):
         return "Please upload a file!", None
     if file.name.split('.')[-1] != "py":
         return "Please upload a model file!", None
-    latency = random.uniform(0, 1)
-    # latency = ZYX's Model(file.name)
+    # latency = random.uniform(0, 1)  # 假设的时延值
+    # latency = ZYX's Model(file.name) # 替换为您实际的时延预测逻辑
+    latency = generate_the_fig(file.name)
     topology_image_path = "./model_onnx.png"
-    return latency, topology_image_path
+    formatted_latency = format_latency(latency)  # 格式化为 4 位有效数字 + 'ms'
+    return formatted_latency, topology_image_path
 
 
 def select_right_model(files, limit):
@@ -94,9 +98,9 @@ def select_right_model(files, limit):
     meet_ret, unmeet_ret = "", ""
     for i in range(files_count):
         if a[i] > limit:
-            unmeet_ret += f"the latency of {files[i].name.split('/')[-1]} is {a[i]}\n"
+            unmeet_ret += f"the latency of {files[i].name.split('/')[-1]} is {a[i]:.4f} ms\n"
         else:
-            meet_ret += f"the latency of {files[i].name.split('/')[-1]} is {a[i]}\n"
+            meet_ret += f"the latency of {files[i].name.split('/')[-1]} is {a[i]:.4f} ms\n"
     return meet_ret, unmeet_ret
 
 
@@ -107,6 +111,11 @@ def clear_fields():
 def clear_fields2():
     return None, 0, None, None
 
+
+def format_latency(latency_value):
+    # 将输入值格式化为 4 位有效数字并添加 'ms'
+    formatted_latency = f"{latency_value * 1000:.4g} ms"
+    return formatted_latency
 
 if __name__ == '__main__':
     with gr.Blocks() as iface:

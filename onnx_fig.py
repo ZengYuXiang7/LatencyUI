@@ -92,7 +92,8 @@ def load_model_from_file(file_path):
     except Exception as e:
         raise RuntimeError(f"Error loading model from file: {e}")
 
-def main(file_path):
+
+def generate_the_fig(file_path):
     """
     主函数：加载模型，生成示例输入，导出 ONNX 文件并生成可视化图像
 
@@ -120,9 +121,11 @@ def main(file_path):
         output_image_path=f"model_onnx.png",
     )
     print(f"Model '{model_name}' has been successfully exported and visualized.")
+    print(model.latency)
+    return model.latency
 
 
 if __name__ == "__main__":
     # 假设用户选择的文件路径
     selected_file = "models/gcn.py"  # 替换为您实际选择的文件路径
-    main(selected_file)
+    generate_the_fig(selected_file)

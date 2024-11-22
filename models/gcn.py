@@ -3,17 +3,42 @@
 
 import math
 import torch
+from time import time
 
 class GCN(torch.nn.Module):
     def __init__(self, args=1):
         super(GCN, self).__init__()
         self.args = args
         self.gnn = GraphSage(5, 600, 1, 0.10, args)
+        self.latency = self.predict_delay()
 
     def forward(self, adjacency, features):
         output = self.gnn(adjacency, features)
         return output
 
+    def predict_delay(self):
+        import numpy as np
+        num_nodes = 6  # 节点数
+        num_edges = 3  # 边数
+
+        # 随机生成边的起点和终点
+        src = np.random.randint(0, num_nodes, size=num_edges)  # 起点
+        dst = np.random.randint(0, num_nodes, size=num_edges)  # 终点
+
+        # 构建邻接矩阵
+        adjacency_matrix = np.zeros((num_nodes, num_nodes), dtype=np.float32)
+        for s, d in zip(src, dst):
+            adjacency_matrix[s, d] = 1.0  # 设置边的权重，默认为1
+            adjacency_matrix[d, s] = 1.0  # 如果是无向图，补充对称边
+
+        # 生成节点特征
+        adjacency_matrix = torch.as_tensor(adjacency_matrix, dtype=torch.float32).unsqueeze(0)
+        features = torch.randn((1, num_nodes, 5))  # 假设每个节点有 5 维特征
+        t1 = time()
+        with torch.no_grad():  # No need to compute gradients for prediction
+            self.forward(adjacency_matrix, features)
+        t2 = time()
+        return t2 - t1
     def get_sample(self):
         import numpy as np
         num_nodes = 6  # 节点数

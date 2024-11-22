@@ -12,6 +12,7 @@ class GRU(torch.nn.Module):
         self.transfer = torch.nn.Linear(5, self.hidden_dim)
         self.lstm = torch.nn.GRU(self.hidden_dim, self.hidden_dim, num_layers=1, batch_first=True)
         self.fc = torch.nn.Linear(self.hidden_dim, 1)
+        self.latency = self.predict_delay()
 
     def forward(self, features):
         x = self.transfer(features)
@@ -20,7 +21,7 @@ class GRU(torch.nn.Module):
         return y
 
     def predict_delay(self):
-        input_data = torch.randn(32, 5)
+        input_data = torch.randn(1, 1, 5)
         t1 = time()
         with torch.no_grad():  # No need to compute gradients for prediction
             self.forward(input_data)

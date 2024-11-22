@@ -18,6 +18,8 @@ class MLP(torch.nn.Module):
             torch.nn.ReLU(),
             torch.nn.Linear(self.hidden_dim // 2, self.output_dim)
         )
+        self.latency = self.predict_delay()
+
 
     def forward(self, x):
         outputs = self.NeuCF(x)
